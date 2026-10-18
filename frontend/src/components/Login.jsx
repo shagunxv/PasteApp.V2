@@ -11,6 +11,7 @@ export default function AuthForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const API_BASE_URL = import.meta.env.VITE_API_URL ||'http://localhost:5000/api';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +21,7 @@ export default function AuthForm() {
     if (isRegister) {
       // 1. Handle Registration Flow
       try {
-        const response = await fetch('http://localhost:5000/api/register', {
+        const response = await fetch(`${API_BASE_URL}/register`, {
           method: 'POST', // Sends a proper POST request
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password }),

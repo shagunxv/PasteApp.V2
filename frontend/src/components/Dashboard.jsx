@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function Dashboard() {
 
@@ -10,7 +11,7 @@ export default function Dashboard() {
         const fetchDashboard = async () => {
             const token = localStorage.getItem('userToken');
             try{
-                const response = await fetch('http://localhost:5000/api/dashboard', {
+               const response = await fetch(`${API_BASE_URL}/dashboard`, {
                     method: 'GET',
                     headers: {'Authorization': `Bearer ${token}`}
                 });
