@@ -28,6 +28,8 @@ export default function AuthForm() {
         });
         const data = await response.json();
 
+        console.log("Registration response:",response.status,data);
+
         if (response.ok) {
           setSuccess('Account created successfully! You can now log in.');
           setIsRegister(false); // Switch back to login mode automatically
