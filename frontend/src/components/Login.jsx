@@ -32,7 +32,11 @@ export default function AuthForm() {
 
         if (response.ok) {
           setSuccess('Account created successfully! You can now log in.');
+          setError('');
           setIsRegister(false); // Switch back to login mode automatically
+          setName('');
+            setPassword('');
+          
         } else {
           setError(data.message || 'Registration failed');
         }
