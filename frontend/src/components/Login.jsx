@@ -21,7 +21,7 @@ export default function AuthForm() {
     if (isRegister) {
       // 1. Handle Registration Flow
       try {
-        const response = await fetch(`${API_BASE_URL}/register`, {
+        const response = await fetch(`${API_BASE_URL}register`, {
           method: 'POST', // Sends a proper POST request
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password }),
