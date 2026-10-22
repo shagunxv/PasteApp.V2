@@ -8,48 +8,65 @@ const generateToken = (id) => {
 };
 
 
+
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const userExists = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const userExists = await User.findOne({
+      email: normalizedEmail,
+    });
 
     if (userExists) {
       return res.status(400).json({
-        message: 'User already exists',
+        message: 'User already exists. Please log in.',
       });
     }
 
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email: normalizedEmail,
+      password,
+    });
 
-    if (user) {
-      // Send welcome email after successful registration
-      try {
-        await sendEmail({
-          to: user.email,
-          name: user.name,
-          userId: user._id.toString(),
-        });
-      } catch (emailError) {
-        console.error('Registration email failed:', emailError.message);
-      }
+    // Respond immediately so the frontend can switch to Login.
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      token: generateToken(user._id),
+      message: 'Registration successful',
+    });
 
-      return res.status(201).json({
-        _id: user.id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user.id),
-        message: 'Registration successful',
-      });
-    }
+    // Attempt the welcome email without delaying the response.
+    sendEmail({
+      to: user.email,
+      name: user.name,
+      userId: user._id.toString(),
+    }).catch((emailError) => {
+      console.error(
+        'Registration email failed:',
+        emailError.message
+      );
+    });
+
   } catch (error) {
     console.error('Registration error:', error);
+
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: 'User already exists. Please log in.',
+      });
+    }
 
     return res.status(500).json({
       message: 'Server error during registration',
     });
   }
 };
+
 
 
 const loginUser = async (req,res) => {
