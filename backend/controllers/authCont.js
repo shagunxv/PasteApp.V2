@@ -9,11 +9,35 @@ const generateToken = (id) => {
 
 
 
+
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password } = req.body || {};
+
+    // Validate required fields
+    if (
+      typeof name !== 'string' ||
+      !name.trim() ||
+      typeof email !== 'string' ||
+      !email.trim() ||
+      typeof password !== 'string' ||
+      !password
+    ) {
+      return res.status(400).json({
+        message: 'Name, email and password are required.',
+      });
+    }
 
     const normalizedEmail = email.trim().toLowerCase();
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({
+        message: 'Please enter a valid email address.',
+      });
+    }
 
     const userExists = await User.findOne({
       email: normalizedEmail,
@@ -26,12 +50,11 @@ const registerUser = async (req, res) => {
     }
 
     const user = await User.create({
-      name,
+      name: name.trim(),
       email: normalizedEmail,
       password,
     });
 
-    // Respond immediately so the frontend can switch to Login.
     res.status(201).json({
       _id: user._id,
       name: user.name,
@@ -40,21 +63,25 @@ const registerUser = async (req, res) => {
       message: 'Registration successful',
     });
 
-    // Attempt the welcome email without delaying the response.
     sendEmail({
       to: user.email,
       name: user.name,
       userId: user._id.toString(),
     }).catch((emailError) => {
-      console.error(
-        'Registration email failed:',
-        emailError.message
-      );
+      console.error('Registration email failed:', emailError.message);
     });
 
   } catch (error) {
     console.error('Registration error:', error);
 
+    // Mongoose validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        message: error.message,
+      });
+    }
+
+    // Duplicate email
     if (error.code === 11000) {
       return res.status(400).json({
         message: 'User already exists. Please log in.',
@@ -66,6 +93,7 @@ const registerUser = async (req, res) => {
     });
   }
 };
+
 
 
 
